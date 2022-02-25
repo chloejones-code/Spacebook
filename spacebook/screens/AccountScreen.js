@@ -1,31 +1,73 @@
-import React, { Component, useState } from 'react';
-import { Text, View } from 'react-native';
+import React, { Component} from 'react';
+import { Text, View, FlatList } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BringData = async (Got) => {
-    const j_value = await AsyncStorage.getItem('@spacebook_info')
-    const logindata = JSON.parse(j_value);
-    let id = logindata.id;
-    let token = logindata.token;
-
-}
-const [data, setdata] = useState([]);
-const data = () => {
-    const resp = await fetch('http://localhost:3333/api/1.0.0/user/' + id, {
-        method: 'Get',
-        headers: {
-            'Content-Type': 'application/JSON',
-            'X-Authorization': token,
+class AccountScreen extends Component {
+    constructor(props)
+    {
+        super(props)
+        this.state =
+        {
+           // isLoading: true,
+             myData:[]
         }
-    })
-    const json = await resp.json();
-    return json.
 
 
     }
-class AccountScreen extends Component {
+     userdata = async() => {
+    const j_value = await AsyncStorage.getItem('@spacebook_info');
+    const logindata = JSON.parse(j_value);
+         let id = logindata.id;
+         console.log(id);
+    let token = logindata.token;
+    try {
+        return fetch('http://localhost:3333/api/1.0.0/user/' + id, {
+            method: 'GET',
+            headers: {
+              
+                'X-Authorization': token
+            }
+        })
+            .then((response) =>
+            {
+                return response.json();
+            })
+            .then((responsejson) =>
+            {
+                console.log(responsejson);
+                this.setState({
+                    //    isLoading: false,
+                    myData: responsejson
+                });
+
+            })
+    } catch (error)
+    {
+        console.error(error);
+    }
+
+    }
+    componentDidMount()
+    {
+        this.userdata();
+
+    }
     render() {
         return (
-            <text>data.f</text>
+            
+            <View>
+                <FlatList
+                    data={this.state.myData}
+                    keyExtractor={(item) => item.user_id.toString()}
+                    renderItem={({ item }) => (
+                        <View>
+                            <Text>{item.first_name} {item.last_name} {item.email} {item.friend_count}</Text>
+                        </View>
+
+                    )}
+                   
+                />
+            </View> 
         );
     }
 }
